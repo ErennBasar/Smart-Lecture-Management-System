@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Advisor.API", "Advisor.API\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lecture.API", "Lecture.API\Lecture.API.csproj", "{40C260E8-B746-4ADB-93E9-4D767133C8AA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "Shared\Shared.csproj", "{BEF8AF01-8ED2-4CE0-B870-C7521078F00E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{40C260E8-B746-4ADB-93E9-4D767133C8AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{40C260E8-B746-4ADB-93E9-4D767133C8AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{40C260E8-B746-4ADB-93E9-4D767133C8AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BEF8AF01-8ED2-4CE0-B870-C7521078F00E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BEF8AF01-8ED2-4CE0-B870-C7521078F00E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BEF8AF01-8ED2-4CE0-B870-C7521078F00E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BEF8AF01-8ED2-4CE0-B870-C7521078F00E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
