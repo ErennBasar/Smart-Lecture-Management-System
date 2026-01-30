@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Identity.API", "Identity.AP
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Student.API", "Student.API\Student.API.csproj", "{AD3E96CE-4858-4016-BB3E-E095A1B7BF6B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Advisor.API", "Advisor.API\Advisor.API.csproj", "{666B1769-2500-4477-9D16-1CFA7D9CDDFF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{AD3E96CE-4858-4016-BB3E-E095A1B7BF6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AD3E96CE-4858-4016-BB3E-E095A1B7BF6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AD3E96CE-4858-4016-BB3E-E095A1B7BF6B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{666B1769-2500-4477-9D16-1CFA7D9CDDFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{666B1769-2500-4477-9D16-1CFA7D9CDDFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{666B1769-2500-4477-9D16-1CFA7D9CDDFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{666B1769-2500-4477-9D16-1CFA7D9CDDFF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
