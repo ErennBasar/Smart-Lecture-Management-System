@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Identity.API", "Identity.API\Identity.API.csproj", "{CD7A6F73-91C2-467A-AE2B-17F3C1F5A824}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Student.API", "Student.API\Student.API.csproj", "{AD3E96CE-4858-4016-BB3E-E095A1B7BF6B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{CD7A6F73-91C2-467A-AE2B-17F3C1F5A824}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CD7A6F73-91C2-467A-AE2B-17F3C1F5A824}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CD7A6F73-91C2-467A-AE2B-17F3C1F5A824}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD3E96CE-4858-4016-BB3E-E095A1B7BF6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD3E96CE-4858-4016-BB3E-E095A1B7BF6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD3E96CE-4858-4016-BB3E-E095A1B7BF6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD3E96CE-4858-4016-BB3E-E095A1B7BF6B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
