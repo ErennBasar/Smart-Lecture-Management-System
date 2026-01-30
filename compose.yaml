@@ -1,0 +1,82 @@
+﻿version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: slms_postgres
+    environment:
+      POSTGRES_USER: erenb
+      POSTGRES_PASSWORD: Password12
+    ports:
+      - "5434:5432"
+    volumes:
+      - slms-postgres_data:/var/lib/postgresql/data
+    networks:
+      - slms_network
+  
+  advisor.api:
+    build:
+      context: .
+      dockerfile: src/AdvisorService/Dockerfile
+    container_name: slms_advisor_service
+    ports:
+        - "5003:8080"
+    environment:
+        - ASPNETCORE_ENVIRONMENT=Development
+        - ConnectionStrings__DefaultConnection=Host=postgres;Port=5434;Database=AdvisorDb;Username=erenb;Password=Password12
+    depends_on:
+        - postgres
+    networks:
+        - slms_network
+
+  identity.api:
+    build:
+      context: .
+      dockerfile: src/IdentityService/Dockerfile
+    container_name: slms_identity_service
+    ports:
+      - "5001:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5434;Database=IdentityDb;Username=erenb;Password=Password12
+    depends_on:
+      - postgres
+    networks:
+      - slms_network
+
+  lecture.api:
+    build:
+      context: .
+      dockerfile: src/CourseService/Dockerfile
+    container_name: slms_course_service
+    ports:
+      - "5004:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5434;Database=LectureDb;Username=erenb;Password=Password12
+    depends_on:
+      - postgres
+    networks:
+      - slms_network
+
+  student.api:
+    build:
+      context: .
+      dockerfile: src/StudentService/Dockerfile
+    container_name: slms_student_service
+    ports:
+      - "5002:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5434;Database=StudentDb;Username=erenb;Password=Password12
+    depends_on:
+      - postgres
+    networks:
+      - slms_network
+
+volumes:
+  slms-postgres_data:
+
+networks:
+  slms_network:
+    driver: bridge
