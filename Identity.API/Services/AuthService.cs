@@ -38,4 +38,21 @@ public class AuthService : IAuthService
 
         return (true, "Kayıt Başarılı");
     }
+
+    public async Task<(bool IsSucces, string? Token, string Message)> LoginAsync(LoginRequestDto loginRequestDto)
+    {
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == loginRequestDto.Email);
+        
+        if (user == null)
+        {
+            return (false, null, "Kullanıcı bulunamadı");
+        }
+
+        var passwordValid = _passwordHasher.VerifyPassword(loginRequestDto.Password, user.Password);
+
+        if (passwordValid)
+            return (true, "Dummy_Token", "Giriş Başarılı");
+
+        return (false, null, "Şifre uyuşmuyor");
+    }
 }
