@@ -9,11 +9,13 @@ public class AuthService : IAuthService
 {
     private readonly IdentityDbContext _dbContext;
     private readonly IPasswordHasher _passwordHasher;
+    private readonly ITokenService _tokenService;
 
-    public AuthService(IdentityDbContext dbContext, IPasswordHasher passwordHasher)
+    public AuthService(IdentityDbContext dbContext, IPasswordHasher passwordHasher, ITokenService tokenService)
     {
         _dbContext = dbContext;
         _passwordHasher = passwordHasher;
+        _tokenService = tokenService;
     }
 
     public async Task<(bool IsSuccess, string Message)> RegisterAsync(RegisterRequestDto request)
@@ -50,9 +52,11 @@ public class AuthService : IAuthService
 
         var passwordValid = _passwordHasher.VerifyPassword(loginRequestDto.Password, user.Password);
 
-        if (passwordValid)
-            return (true, "Dummy_Token", "Giriş Başarılı");
+        if (!passwordValid)
+            return (false, null, "Şifre uyuşmuyor");
 
-        return (false, null, "Şifre uyuşmuyor");
+        var token = _tokenService.GenerateToken(user);
+        return (true, token, "Giriş Başarılı");
+
     }
 }

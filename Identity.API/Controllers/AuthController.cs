@@ -28,5 +28,23 @@ namespace Identity.API.Controllers
 
             return Ok(new { message = result.Message });
         }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(LoginRequestDto loginRequestDto)
+        {
+            var result = await _authService.LoginAsync(loginRequestDto);
+
+            if (result.IsSucces)
+                return Ok(new
+                {
+                    token = result.Token,
+                    message = result.Message
+                });
+
+            return BadRequest(new
+            {
+                message = result.Message
+            });
+        }
     }
 }
