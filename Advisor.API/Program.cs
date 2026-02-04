@@ -1,11 +1,13 @@
 using Advisor.API.Models;
 using Microsoft.EntityFrameworkCore;
+using Shared.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
 builder.Services.AddOpenApi();
+builder.Services.AddJwtAuthentication(builder.Configuration);
 
 builder.Services.AddDbContext<AdvisorDbContext>(options =>
 {
