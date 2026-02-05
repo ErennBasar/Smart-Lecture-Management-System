@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Shared.Services;
 
 namespace Shared.Extensions;
 
@@ -42,6 +43,14 @@ public static class AuthExtensions
                     ClockSkew = TimeSpan.Zero // Varsayılan 5 dk'lık gecikme toleransını sıfırla
                 };
             });
+        return serviceCollection;
+    }
+
+    public static IServiceCollection AddSharedServices(this IServiceCollection serviceCollection)
+    {
+        serviceCollection.AddHttpContextAccessor();
+        serviceCollection.AddScoped<IAuthenticatedUserService, AuthenticatedUserService>();
+
         return serviceCollection;
     }
 }
