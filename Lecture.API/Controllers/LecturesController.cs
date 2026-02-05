@@ -34,10 +34,14 @@ namespace Lecture.API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateLecture(CreateLectureDto createLectureDto)
         {
+            var advisorId = _authenticatedUserService.UserId; 
+
+            if (advisorId == Guid.Empty) return Unauthorized();
+            
             var newLecture = new Models.Entities.Lecture
             {
                 Id = Guid.NewGuid(),
-                AdvisorId = createLectureDto.AdvisorId,
+                AdvisorId = advisorId, // Dersi oluşturana zimmetledik
                 CourseCode = createLectureDto.CourseCode,
                 CourseName = createLectureDto.CourseName,
                 Description = createLectureDto.Description,
@@ -48,12 +52,14 @@ namespace Lecture.API.Controllers
                 Status = Shared.Enums.LectureStatus.NotStarted,
             };
 
-            _dbContext.Lectures.AddAsync(newLecture);
+            _dbContext.Lectures.Add(newLecture);
             await _dbContext.SaveChangesAsync();
 
             return Ok( new
             {
-                message = "Ders oluşturuldu.", lectureId = newLecture.Id
+                message = "Ders oluşturuldu.", 
+                lectureId = newLecture.Id,
+                advisorId = newLecture.AdvisorId
             });
         }
 
