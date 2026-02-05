@@ -15,7 +15,7 @@ public class TokenService : ITokenService
         _configuration = configuration;
     }
 
-    public string GenerateToken(User user)
+    public string GenerateToken(User user, IList<string> roles)
     {
         var jwtSettings = _configuration.GetSection("JwtSettings");
         var secretKey = Encoding.UTF8.GetBytes(jwtSettings["SecretKey"] ?? throw new InvalidOperationException());
@@ -26,9 +26,14 @@ public class TokenService : ITokenService
             new Claim(JwtRegisteredClaimNames.Email, user.Email),       // Email
             new Claim(JwtRegisteredClaimNames.GivenName, user.FirstName), // Ad
             new Claim(JwtRegisteredClaimNames.FamilyName, user.LastName), // Soyad
-            new Claim(ClaimTypes.Role, user.UserRole.ToString()),         // Rol (Örn: "Student")
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()) // Token ID
         };
+        
+        // Roller 
+        foreach (var role in roles)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role));
+        }
 
         var tokenDescriptor = new SecurityTokenDescriptor()
         {

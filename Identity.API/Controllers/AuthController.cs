@@ -1,6 +1,8 @@
 using Identity.API.DTOs;
+using Identity.API.Models.Entities;
 using Identity.API.Services;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Identity.API.Controllers
@@ -10,10 +12,12 @@ namespace Identity.API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly UserManager<User> _userManager;
 
-        public AuthController(IAuthService authService)
+        public AuthController(IAuthService authService, UserManager<User> userManager)
         {
             _authService = authService;
+            _userManager = userManager;
         }
 
         [HttpPost("register")]
@@ -44,6 +48,28 @@ namespace Identity.API.Controllers
             return BadRequest(new
             {
                 message = result.Message
+            });
+        }
+
+        [HttpGet("users/{userId}")]
+        public async Task<IActionResult> GetAdvisorById(Guid userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+
+            if (user == null)
+                return NotFound("Kullanıcı bulunamadı");
+
+            var roles = await _userManager.GetRolesAsync(user);
+
+            return Ok(new
+            {
+                message = "Kullanıcı mevcut, bilgileri aşağıdadır",
+                id = user.Id,
+                firstName = user.FirstName,
+                lastName = user.LastName,
+                email = user.Email,
+                role = roles,
+                isActive = user.IsActive
             });
         }
     }
