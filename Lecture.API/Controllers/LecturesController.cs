@@ -32,23 +32,41 @@ namespace Lecture.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = ("Admin, Academician"))]
         public async Task<IActionResult> CreateLecture(CreateLectureDto createLectureDto)
         {
-            var advisorId = _authenticatedUserService.UserId; 
+            Guid finalAdvisorId = Guid.Empty;
 
-            if (advisorId == Guid.Empty) return Unauthorized();
+            var isUserAdmin = User.IsInRole("Admin");
+
+            if (isUserAdmin)
+            {
+                if (createLectureDto.AdvisorId == null || createLectureDto.AdvisorId == Guid.Empty)
+                {
+                    return BadRequest("Admin ders oluştururken akademisyeni (AdvisorId) seçmeli");
+                }
+
+                // Adminin seçtiği akademisyenin Id'si alınır.
+                finalAdvisorId = createLectureDto.AdvisorId.Value;
+            }
+            else
+            {
+                // Eğer admin değilse danışmandır, bu yüzden Id'si otomatik alınır.
+                finalAdvisorId = _authenticatedUserService.UserId;
+            }
+            
             
             var newLecture = new Models.Entities.Lecture
             {
                 Id = Guid.NewGuid(),
-                AdvisorId = advisorId, // Dersi oluşturana zimmetledik
+                AdvisorId = finalAdvisorId,
                 CourseCode = createLectureDto.CourseCode,
                 CourseName = createLectureDto.CourseName,
                 Description = createLectureDto.Description,
                 Credits = createLectureDto.Credits,
                 MaxStudents = createLectureDto.MaxStudents,
-                StartDate = createLectureDto.StartDate,
-                EndDate = createLectureDto.EndDate,
+                StartDate = createLectureDto.StartDate?.ToUniversalTime(),
+                EndDate = createLectureDto.EndDate?.ToUniversalTime(),
                 Status = Shared.Enums.LectureStatus.NotStarted,
             };
 
