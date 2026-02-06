@@ -23,9 +23,12 @@ namespace Student.API.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get()
+        [Authorize(Roles = ("Admin, Academician"))]
+        public async Task<IActionResult> GetAllStudents()
         {
-            return Ok("Tebrikler! Pasaportun geçerli, içeri girdin.");
+            var students = await _dbContext.Students.ToListAsync();
+            
+            return Ok(students);
         }
 
         [HttpPost]
