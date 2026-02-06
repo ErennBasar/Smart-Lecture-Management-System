@@ -38,7 +38,7 @@ namespace Advisor.API.Controllers
             if (existingAdvisor != null)
                 return Conflict("BU Id'ye sahip danışman zaten mevcut");
 
-            // Identity Servisine Sor -> "Böyle bir user var mı?"
+            // Identity Servisine Sor 
             var client = _httpClientFactory.CreateClient();
             var response = await client.GetAsync($"http://localhost:5294/api/auth/users/{createAdvisorDto.UserId}");
             

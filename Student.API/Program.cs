@@ -10,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
 builder.Services.AddOpenApi();
+builder.Services.AddHttpClient();
 builder.Services.AddJwtAuthentication(builder.Configuration);
 
 builder.Services.AddDbContext<StudentDbContext>(options =>
