@@ -72,5 +72,84 @@ namespace Student.API.Controllers
                 AdvisorId = newStudent.AdvisorId
             });
         }
+        
+        [HttpPut("{id}")]
+        [Authorize(Roles = ("Admin, Academician"))]
+        public async Task<IActionResult> UpdateStudent(Guid id,[FromBody] UpdateStudentDto updateDto)
+        {
+            var student = await _dbContext.Students.FirstOrDefaultAsync(s => s.Id == id);
+
+            if (student == null)
+                return NotFound($"HATA:\n '{id}' Bu ID ile eşleşen bir öğrenci bulunmamaktadır!");
+
+            var changes = new Dictionary<string, object>();
+
+            if (!string.IsNullOrEmpty(updateDto.FirstName) && student.FirstName != updateDto.FirstName)
+            {
+                student.FirstName = updateDto.FirstName;
+                changes.Add("FirstName",updateDto.FirstName);
+            }
+
+            if (!string.IsNullOrEmpty(updateDto.LastName) && student.LastName != updateDto.LastName)
+            {
+                student.LastName = updateDto.LastName;
+                changes.Add("LastName",updateDto.LastName);
+            }
+
+            if (updateDto.AdvisorId.HasValue && updateDto.AdvisorId
+                != Guid.Empty && student.AdvisorId
+                != updateDto.AdvisorId)
+            {
+                student.AdvisorId = updateDto.AdvisorId.Value;
+                changes.Add("AdvisorId",updateDto.AdvisorId.Value);
+            }
+
+
+            if (!string.IsNullOrEmpty(updateDto.Address) && student.Address != updateDto.Address)
+            {
+                student.Address = updateDto.Address;
+                changes.Add("Address",updateDto.Address);
+            }
+
+            if (updateDto.IsActive.HasValue && student.IsActive != updateDto.IsActive.Value)
+            {
+                student.IsActive = updateDto.IsActive.Value;
+                changes.Add("IsActive",updateDto.IsActive.Value);
+            }
+
+            if (updateDto.DateOfBirth.HasValue)
+            {
+                var newDate = updateDto.DateOfBirth.Value.ToUniversalTime();
+
+                if (newDate != student.DateOfBirth)
+                {
+                    student.DateOfBirth = newDate;
+                    changes.Add("DateOfBirth",newDate);
+                }
+            }
+            
+            // Eğer hiçbir değişiklik yapılmadıysa 
+            if (changes.Count == 0)
+            {
+                return Ok(new
+                {
+                    message = "Herhangi bir değişiklik yapılmadı, veriler zaten güncel."
+                });
+            }
+
+            student.UpdatedDate = DateTime.UtcNow;
+
+            _dbContext.Students.Update(student);
+            await _dbContext.SaveChangesAsync();
+
+            return Ok(new
+            {
+                Message = "Güncelleme işlemi tamamlandı",
+                StudentId = student.Id,
+                UpdatedFields = changes
+            });
+        }
+        
+        
     }
 }
