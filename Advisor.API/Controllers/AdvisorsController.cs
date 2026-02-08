@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Shared.Services;
 
 namespace Advisor.API.Controllers
 {
@@ -14,18 +15,78 @@ namespace Advisor.API.Controllers
     {
         private readonly AdvisorDbContext _dbContext;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IAuthenticatedUserService _authenticatedUserService;
 
         public AdvisorsController(AdvisorDbContext dbContext, 
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory, 
+            IAuthenticatedUserService authenticatedUserService)
         {
             _dbContext = dbContext;
             _httpClientFactory = httpClientFactory;
+            _authenticatedUserService = authenticatedUserService;
         }
 
         [HttpGet]
         public IActionResult Get()
         {
             return Ok("Merhaba, ben Danışman Servisi. Pasaportun sağlam, içeri girdin.");
+        }
+
+        [HttpPut]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateAdvisor(Guid id,[FromBody] UpdateAdvisorDto updateAdvisorDto)
+        {
+            var advisor = await _dbContext.Advisors.FirstOrDefaultAsync(a => a.Id == id);
+
+            if (advisor == null)
+                return NotFound($"Bu {id} ile eşleşen bir Akademisyen bulunamadı");
+
+            var changes = new Dictionary<string, object>();
+
+            if (!string.IsNullOrEmpty(updateAdvisorDto.FirstName) && advisor.FirstName != updateAdvisorDto.FirstName)
+            {
+                advisor.FirstName = updateAdvisorDto.FirstName;
+                changes.Add("First Name",updateAdvisorDto.FirstName);
+            }
+            
+            if (!string.IsNullOrEmpty(updateAdvisorDto.LastName) && advisor.LastName != updateAdvisorDto.LastName)
+            {
+                advisor.LastName = updateAdvisorDto.LastName;
+                changes.Add("Last Name",updateAdvisorDto.LastName);
+            }
+
+            if (!string.IsNullOrEmpty(updateAdvisorDto.Department) && advisor.Department != updateAdvisorDto.Department)
+            {
+                advisor.Department = updateAdvisorDto.Department;
+                changes.Add("Department", updateAdvisorDto.Department);
+            }
+
+            if (!string.IsNullOrEmpty(updateAdvisorDto.Specialization) && advisor.Specialization != updateAdvisorDto.Specialization)
+            {
+                advisor.Specialization = updateAdvisorDto.Specialization;
+                changes.Add("Specialization",updateAdvisorDto.Specialization);
+            }
+
+            if (changes.Count == 0)
+            {
+                return Ok(new
+                {
+                    message = "Herhangi bir değişiklik yapılmadı, veriler zaten güncel."
+                });
+            }
+
+            advisor.UpdatedDate = DateTime.UtcNow;
+
+            _dbContext.Advisors.Update(advisor);
+            await _dbContext.SaveChangesAsync();
+
+            return Ok(new
+            {
+                Message = "Akademisyen güncellendi",
+                AdvisorId = advisor.Id,
+                UpdatedFields = changes
+                
+            });
         }
 
         [HttpPost]
