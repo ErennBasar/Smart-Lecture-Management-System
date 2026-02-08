@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Shared.Services;
 using Student.API.DTOs;
 using Student.API.Models;
 
@@ -14,12 +15,15 @@ namespace Student.API.Controllers
     {
         private readonly StudentDbContext _dbContext;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IAuthenticatedUserService _authenticatedUserService;
 
         public StudentsController(StudentDbContext dbContext, 
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory, 
+            IAuthenticatedUserService authenticatedUserService)
         {
             _dbContext = dbContext;
             _httpClientFactory = httpClientFactory;
+            _authenticatedUserService = authenticatedUserService;
         }
 
         [HttpGet]
@@ -29,6 +33,35 @@ namespace Student.API.Controllers
             var students = await _dbContext.Students.ToListAsync();
             
             return Ok(students);
+        }
+
+        [HttpGet("my-profile")]
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> GetStudentInfoById()
+        {
+            var studentId = _authenticatedUserService.UserId;
+            
+            if (studentId == Guid.Empty)
+                return Unauthorized();
+
+            var studentInfo = await _dbContext.Students
+                .Where(w => w.UserId == studentId)
+                .Select(e => new
+                {
+                    e.Address,
+                    e.StudentNumber,
+                    e.DateOfBirth,
+                    e.Email,
+                    e.FirstName,
+                    e.LastName,
+                    e.IsActive,
+
+                }).FirstOrDefaultAsync();
+
+            if (studentInfo == null)
+                return NotFound("Öğrencinin profil bilgilerine ulaşılamadı");
+
+            return Ok(studentInfo);
         }
 
         [HttpPost]
