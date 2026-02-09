@@ -27,9 +27,12 @@ namespace Advisor.API.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get()
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllAdvisors()
         {
-            return Ok("Merhaba, ben Danışman Servisi. Pasaportun sağlam, içeri girdin.");
+            var advisors = await _dbContext.Advisors.ToListAsync();
+            
+            return Ok(advisors);
         }
 
         [HttpPut("{id}")]
