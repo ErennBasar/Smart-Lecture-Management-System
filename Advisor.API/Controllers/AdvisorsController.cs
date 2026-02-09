@@ -32,7 +32,7 @@ namespace Advisor.API.Controllers
             return Ok("Merhaba, ben Danışman Servisi. Pasaportun sağlam, içeri girdin.");
         }
 
-        [HttpPut]
+        [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateAdvisor(Guid id,[FromBody] UpdateAdvisorDto updateAdvisorDto)
         {

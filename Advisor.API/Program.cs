@@ -9,6 +9,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddOpenApi();
 builder.Services.AddHttpClient();
 builder.Services.AddJwtAuthentication(builder.Configuration);
+builder.Services.AddSharedServices();
 
 builder.Services.AddDbContext<AdvisorDbContext>(options =>
 {
