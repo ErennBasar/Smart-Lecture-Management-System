@@ -1,6 +1,7 @@
 using Identity.API.DTOs;
 using Identity.API.Models.Entities;
 using Identity.API.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -71,6 +72,34 @@ namespace Identity.API.Controllers
                 role = roles,
                 isActive = user.IsActive
             });
+        }
+
+        [HttpPut("update/{userId}")]
+        //[Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateUser(Guid userId, [FromBody] UpdateUserDto updateUserDto)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+
+            if (user == null)
+                return NotFound("Kullanıcı Bulunamadı...");
+
+            if (!string.IsNullOrEmpty(updateUserDto.FirstName))
+                user.FirstName = updateUserDto.FirstName;
+
+            if (!string.IsNullOrEmpty(updateUserDto.LastName))
+                user.LastName = updateUserDto.LastName;
+
+            user.UpdatedDate = DateTime.UtcNow;
+
+            var result = await _userManager.UpdateAsync(user);
+
+            if (result.Succeeded)
+                return Ok(new
+                {
+                    Message = "Kullanıcı Users tablosunda da güncellendi."
+                });
+
+            return BadRequest(result.Errors);
         }
     }
 }

@@ -45,17 +45,20 @@ namespace Advisor.API.Controllers
                 return NotFound($"Bu {id} ile eşleşen bir Akademisyen bulunamadı");
 
             var changes = new Dictionary<string, object>();
+            bool nameChanged = false;
 
             if (!string.IsNullOrEmpty(updateAdvisorDto.FirstName) && advisor.FirstName != updateAdvisorDto.FirstName)
             {
                 advisor.FirstName = updateAdvisorDto.FirstName;
                 changes.Add("First Name",updateAdvisorDto.FirstName);
+                nameChanged = true;
             }
             
             if (!string.IsNullOrEmpty(updateAdvisorDto.LastName) && advisor.LastName != updateAdvisorDto.LastName)
             {
                 advisor.LastName = updateAdvisorDto.LastName;
                 changes.Add("Last Name",updateAdvisorDto.LastName);
+                nameChanged = true;
             }
 
             if (!string.IsNullOrEmpty(updateAdvisorDto.Department) && advisor.Department != updateAdvisorDto.Department)
@@ -70,6 +73,37 @@ namespace Advisor.API.Controllers
                 changes.Add("Specialization",updateAdvisorDto.Specialization);
             }
 
+            if (nameChanged) // FirstName ve LastName AspNetUsers tablosunda'da old. için senkronizasyon sağlamak gerektiğinden bu kontrol yapıldı.
+            {
+                try
+                {
+                    var client = _httpClientFactory.CreateClient();
+
+                    var userUpdateModel = new
+                    {
+                        FirstName = !string.IsNullOrEmpty(updateAdvisorDto.FirstName)
+                            ? updateAdvisorDto.FirstName
+                            : advisor.FirstName,
+                        
+                        LastName = !string.IsNullOrEmpty(updateAdvisorDto.LastName)
+                            ? updateAdvisorDto.LastName
+                            : advisor.LastName
+                    };
+
+                    var response = await client.PutAsJsonAsync($"http://localhost:5294/api/auth/update/{advisor.UserId}",
+                        userUpdateModel);
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        Console.WriteLine($"KRİTİK HATA: Auth API güncellenemedi! Status: {response.StatusCode}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Auth API erişim hatası: {ex.Message}");
+                }
+            }
+
             if (changes.Count == 0)
             {
                 return Ok(new
@@ -82,6 +116,8 @@ namespace Advisor.API.Controllers
 
             _dbContext.Advisors.Update(advisor);
             await _dbContext.SaveChangesAsync();
+            
+            
 
             return Ok(new
             {
