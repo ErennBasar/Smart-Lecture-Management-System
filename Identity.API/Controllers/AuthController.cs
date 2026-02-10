@@ -52,7 +52,7 @@ namespace Identity.API.Controllers
         }
 
         [HttpGet("users/{userId}")]
-        public async Task<IActionResult> GetAdvisorById(Guid userId)
+        public async Task<IActionResult> GetUserById(Guid userId) // CreateAdvisor endpoint'i çalıştığında gelen ID'ye sahip bir kullanıcı var mı diye bu endpoint'e httpClient ile soruyor
         {
             var user = await _userManager.FindByIdAsync(userId.ToString());
 
