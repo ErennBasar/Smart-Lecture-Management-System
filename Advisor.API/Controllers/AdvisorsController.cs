@@ -35,6 +35,24 @@ namespace Advisor.API.Controllers
             return Ok(advisors);
         }
 
+        [HttpGet("get-id-by-user/{userId}")]
+        [AllowAnonymous]
+        //[Authorize(Roles = ("Admin, Academician"))]
+        public async Task<IActionResult> GetAdvisorIdByUserId(Guid userId)
+        {
+            var advisorId = await _dbContext.Advisors
+                .Where(s => s.UserId == userId)
+                .Select(s => s.Id)
+                .FirstOrDefaultAsync();
+
+            if (advisorId == Guid.Empty)
+                return NotFound("Akademisyen bulunamadı");
+                
+
+            return Ok(advisorId);
+        }
+        
+
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateAdvisor(Guid id,[FromBody] UpdateAdvisorDto updateAdvisorDto)

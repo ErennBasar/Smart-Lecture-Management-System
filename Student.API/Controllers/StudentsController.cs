@@ -26,7 +26,7 @@ namespace Student.API.Controllers
             _authenticatedUserService = authenticatedUserService;
         }
 
-        [HttpGet]
+        [HttpGet("get-all")]
         [Authorize(Roles = ("Admin, Academician"))]
         public async Task<IActionResult> GetAllStudents()
         {
@@ -64,7 +64,7 @@ namespace Student.API.Controllers
             return Ok(studentInfo);
         }
 
-        [HttpPost]
+        [HttpPost("create-student")]
         [Authorize(Roles = "Admin, Academician")]
         public async Task<IActionResult> CreateStudent(CreateStudentDto createStudentDto)
         {
@@ -106,7 +106,7 @@ namespace Student.API.Controllers
             });
         }
         
-        [HttpPut("{id}")]
+        [HttpPut("update-student/{id}")]
         [Authorize(Roles = ("Admin, Academician"))]
         public async Task<IActionResult> UpdateStudent(Guid id,[FromBody] UpdateStudentDto updateDto)
         {
@@ -182,7 +182,49 @@ namespace Student.API.Controllers
                 UpdatedFields = changes
             });
         }
+
+        [HttpGet("advisor/my-students")]
+        [Authorize(Roles = "Academician")]
+        public async Task<IActionResult> GetMyStudents()
+        {
+            var advisorUserId = _authenticatedUserService.UserId;
+
+            if (advisorUserId == Guid.Empty)
+                return NotFound("Bu Id'ye sahip bir Akademisyen yok");
+
+            var client = _httpClientFactory.CreateClient();
+            var requestUrl = $"http://localhost:5053/api/advisors/get-id-by-user/{advisorUserId}";
+            var response = await client.GetAsync(requestUrl);
+            
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"--- HATA DETAYI ---");
+                Console.WriteLine($"Gidilen Adres: {requestUrl}");
+                Console.WriteLine($"Hata Kodu: {response.StatusCode}");
+                Console.WriteLine($"Hata Mesajı: {await response.Content.ReadAsStringAsync()}");
         
-        
+                return BadRequest($"Akademisyen bilgisine ulaşılamadı. Hata Kodu: {response.StatusCode}");}
+
+            var advisorIdString = await response.Content.ReadAsStringAsync();
+
+            var advisorId = Guid.Parse(advisorIdString.Trim('"'));
+
+            var students = await _dbContext.Students
+                .Where(s => s.AdvisorId == advisorId & s.IsActive)
+                .Select(s => new
+                {
+                    s.StudentNumber,
+                    s.FirstName,
+                    s.LastName,
+                    s.Email,
+                    s.Address,
+                    s.DateOfBirth,
+                    s.EnrollmentDate,
+
+                }).ToListAsync();
+
+            return Ok(students);
+
+        }
     }
 }
