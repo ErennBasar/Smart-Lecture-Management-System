@@ -26,7 +26,7 @@ namespace Advisor.API.Controllers
             _authenticatedUserService = authenticatedUserService;
         }
 
-        [HttpGet]
+        [HttpGet("get-all-advisors")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllAdvisors()
         {
@@ -50,10 +50,11 @@ namespace Advisor.API.Controllers
                 
 
             return Ok(advisorId);
-        }
+        } // StudentController'daki GetMyStudents() endpoint'i içinden bu endpoint'e http isteği atılıyor.
+        // Akademisyen GetMyStudents() endpoint'ine istek attığında userId'si ile bu endpoint'e geliyor ve gelen userId'ye karşılık gelen Id geri döndürülüyor
         
 
-        [HttpPut("{id}")]
+        [HttpPut("update-advisor/{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateAdvisor(Guid id,[FromBody] UpdateAdvisorDto updateAdvisorDto)
         {
@@ -146,7 +147,7 @@ namespace Advisor.API.Controllers
             });
         }
 
-        [HttpPost]
+        [HttpPost("create-advisor")]
         [Authorize(Roles = "Admin")] // Sadece rolü admin olanlar erişebilir
         public async Task<IActionResult> CreateAdvisor(CreateAdvisorDto createAdvisorDto)
         {
