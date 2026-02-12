@@ -53,7 +53,8 @@ namespace Identity.API.Controllers
         }
 
         [HttpGet("users/{userId}")]
-        public async Task<IActionResult> GetUserById(Guid userId) // CreateAdvisor endpoint'i çalıştığında gelen ID'ye sahip bir kullanıcı var mı diye bu endpoint'e httpClient ile soruyor
+        [Authorize(AuthenticationSchemes = "Bearer",Roles = "Admin")]
+        public async Task<IActionResult> GetUserById(Guid userId) 
         {
             var user = await _userManager.FindByIdAsync(userId.ToString());
 
@@ -72,7 +73,7 @@ namespace Identity.API.Controllers
                 role = roles,
                 isActive = user.IsActive
             });
-        }
+        } // CreateAdvisor endpoint'i çalıştığında gelen ID'ye sahip bir kullanıcı var mı diye bu endpoint'e httpClient ile soruyor
 
         [HttpPut("update/{userId}")]
         //[Authorize(Roles = "Admin")]

@@ -36,8 +36,7 @@ namespace Advisor.API.Controllers
         }
 
         [HttpGet("get-id-by-user/{userId}")]
-        [AllowAnonymous]
-        //[Authorize(Roles = ("Admin, Academician"))]
+        [Authorize(Roles = ("Admin, Academician"))]
         public async Task<IActionResult> GetAdvisorIdByUserId(Guid userId)
         {
             var advisorId = await _dbContext.Advisors
@@ -148,7 +147,7 @@ namespace Advisor.API.Controllers
         }
 
         [HttpPost("create-advisor")]
-        [Authorize(Roles = "Admin")] // Sadece rolü admin olanlar erişebilir
+        [Authorize(Roles = "Admin")] 
         public async Task<IActionResult> CreateAdvisor(CreateAdvisorDto createAdvisorDto)
         {
             var existingAdvisor = await _dbContext.Advisors.FirstOrDefaultAsync(a =>
@@ -156,15 +155,30 @@ namespace Advisor.API.Controllers
 
             if (existingAdvisor != null)
                 return Conflict("BU Id'ye sahip danışman zaten mevcut");
-
+            
             // Identity Servisine Sor 
             var client = _httpClientFactory.CreateClient();
-            var response = await client.GetAsync($"http://localhost:5294/api/auth/users/{createAdvisorDto.UserId}");
+            
+            // http isteği atarken accessToken değişkeni ile kullanıcıya ait token'da iletiliyor.
+            var accessToken = HttpContext.Request.Headers["Authorization"].ToString();
+            
+            if(!string.IsNullOrEmpty(accessToken))
+                client.DefaultRequestHeaders.Add("Authorization",accessToken);
+
+            var requestUrl = $"http://localhost:5294/api/auth/users/{createAdvisorDto.UserId}";
+            var response = await client.GetAsync(requestUrl);
             
             if (!response.IsSuccessStatusCode)
             {
-                return BadRequest($"HATA: '{createAdvisorDto.UserId}' ID'sine sahip bir kullanıcı Identity sisteminde bulunamadı. Önce kullanıcıyı oluşturun.");
-            }
+                var errorContent = await response.Content.ReadAsStringAsync();
+        
+                return BadRequest(new 
+                {
+                    ErrorType = "Auth API Hatası",
+                    StatusCode = response.StatusCode, 
+                    TargetUrl = requestUrl,
+                    AuthApiMessage = errorContent 
+                });}
             
             var newAdvisor = new Models.Advisor
             {

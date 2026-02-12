@@ -33,10 +33,10 @@ public static class AuthExtensions
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(key),
 
-                    ValidateIssuer = true,
+                    ValidateIssuer = false,
                     ValidIssuer = issuer,
 
-                    ValidateAudience = true,
+                    ValidateAudience = false,
                     ValidAudience = audience,
 
                     ValidateLifetime = true, // Süresi dolmuş token'ı reddet

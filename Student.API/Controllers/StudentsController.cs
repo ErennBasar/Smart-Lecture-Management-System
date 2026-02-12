@@ -193,6 +193,13 @@ namespace Student.API.Controllers
                 return NotFound("Bu Id'ye sahip bir Akademisyen yok");
 
             var client = _httpClientFactory.CreateClient();
+
+            // http isteği atarken accessToken değişkeni ile kullanıcıya ait token'da iletiliyor.
+            var accessToken = HttpContext.Request.Headers["Authorization"].ToString();
+            
+            if(!string.IsNullOrEmpty(accessToken))
+                client.DefaultRequestHeaders.Add("Authorization",accessToken);
+            
             var requestUrl = $"http://localhost:5053/api/advisors/get-id-by-user/{advisorUserId}";
             var response = await client.GetAsync(requestUrl);
             
