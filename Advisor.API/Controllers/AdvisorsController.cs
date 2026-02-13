@@ -179,14 +179,16 @@ namespace Advisor.API.Controllers
                     TargetUrl = requestUrl,
                     AuthApiMessage = errorContent 
                 });}
+
+            var identityUser = await response.Content.ReadFromJsonAsync<IdentityUserDto>();
             
             var newAdvisor = new Models.Advisor
             {
                 Id = Guid.NewGuid(),
                 UserId = createAdvisorDto.UserId,
-                FirstName = createAdvisorDto.FirstName,
-                LastName = createAdvisorDto.LastName,
-                Email = createAdvisorDto.Email,
+                FirstName = identityUser.FirstName,
+                LastName = identityUser.LastName,
+                Email = identityUser.Email,
                 EmployeeNumber = createAdvisorDto.EmployeeNumber,
                 Department = createAdvisorDto.Department,
                 Specialization = createAdvisorDto.Specialization
