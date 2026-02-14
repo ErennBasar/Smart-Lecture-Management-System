@@ -1,6 +1,6 @@
 namespace Shared.Settings;
 
-public class RabbitMqSettings
+public static class RabbitMqSettings
 {
-    
+    public const string AdvisorDeletedQueue = "advisor-deleted-queue";
 }
