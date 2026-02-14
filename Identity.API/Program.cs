@@ -1,10 +1,13 @@
 using Identity.API;
+using Identity.API.Consumers;
 using Identity.API.Models;
 using Identity.API.Models.Entities;
 using Identity.API.Services;
+using MassTransit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Shared.Extensions;
+using Shared.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +22,24 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddDbContext<IdentityDbContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
+
+builder.Services.AddMassTransit(s =>
+{
+    s.AddConsumer<AdvisorDeletedConsumer>();
+
+    s.UsingRabbitMq((context, configuration) =>
+    {
+        var rabbitMqUri = builder.Configuration.GetConnectionString("RabbitMq");
+        
+        configuration.Host(new Uri(rabbitMqUri));
+        
+        configuration.ReceiveEndpoint(RabbitMqSettings.AdvisorDeletedQueue, e =>
+        {
+            e.ConfigureConsumer<AdvisorDeletedConsumer>(context);
+            e.UseMessageRetry(r=>r.Immediate(5));
+        });
+    });
 });
 
 builder.Services.AddIdentity<User, IdentityRole<Guid>>(options =>

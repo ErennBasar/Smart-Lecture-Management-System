@@ -1,9 +1,11 @@
 using Advisor.API.DTOs;
 using Advisor.API.Models;
+using MassTransit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Shared.Events;
 using Shared.Services;
 
 namespace Advisor.API.Controllers
@@ -16,14 +18,20 @@ namespace Advisor.API.Controllers
         private readonly AdvisorDbContext _dbContext;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IAuthenticatedUserService _authenticatedUserService;
+        private readonly IPublishEndpoint _publishEndpoint;
+        private readonly IConfiguration _configuration;
 
         public AdvisorsController(AdvisorDbContext dbContext, 
             IHttpClientFactory httpClientFactory, 
-            IAuthenticatedUserService authenticatedUserService)
+            IAuthenticatedUserService authenticatedUserService, 
+            IPublishEndpoint publishEndpoint, 
+            IConfiguration configuration)
         {
             _dbContext = dbContext;
             _httpClientFactory = httpClientFactory;
             _authenticatedUserService = authenticatedUserService;
+            _publishEndpoint = publishEndpoint;
+            _configuration = configuration;
         }
 
         [HttpGet("get-all-advisors")]
@@ -201,6 +209,67 @@ namespace Advisor.API.Controllers
             {
                 message = "Danışman başarıyla hoca oluşturuldu.",
                 advisorId = newAdvisor.Id
+            });
+        }
+
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> SoftDeleteAdvisor(Guid id)
+        {
+            var advisor = await _dbContext.Advisors.FirstOrDefaultAsync(s => s.Id == id);
+
+            if (advisor == null)
+                return NotFound("Akademisyen bulunamadı");
+            
+            var client = _httpClientFactory.CreateClient();
+
+            var accessToken = HttpContext.Request.Headers["Authorization"].ToString();
+
+            if(!string.IsNullOrEmpty(accessToken))
+                client.DefaultRequestHeaders.Add("Authorization", accessToken);
+            
+            var studentApiUrl = _configuration["ServiceUrls:StudentApi"];
+            
+            if (string.IsNullOrEmpty(studentApiUrl)) studentApiUrl = "http://localhost:5053";
+
+            var requestUrl = $"{studentApiUrl}/api/students/check-active-students/{id}";
+            
+            var response = await client.GetAsync(requestUrl);
+            
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var hasStudents = await response.Content.ReadFromJsonAsync<bool>();
+                if (hasStudents)
+                {
+                    return BadRequest("BU DANIŞMAN SİLİNEMEZ! Üzerine zimmetli aktif öğrenciler bulunmaktadır. Lütfen önce öğrencileri transfer edin.");
+                }
+            }
+            else 
+            {
+                // Student API'ye ulaşılamadıysa silme işlemini durdurmak güvenlik gereğidir.
+                //return StatusCode(500, "Öğrenci kontrolü yapılamadığı için silme işlemi durduruldu.");
+                
+                var errorContent = await response.Content.ReadAsStringAsync();
+                return StatusCode((int)response.StatusCode, $"Student API Hatası: {response.StatusCode} - {errorContent}");
+            }
+
+            advisor.IsDeleted = true;
+            advisor.DeletedDate = DateTime.UtcNow;
+            advisor.IsActive = false;
+
+            _dbContext.Advisors.Update(advisor);
+            await _dbContext.SaveChangesAsync();
+
+            await _publishEndpoint.Publish<IAdvisorDeletedEvent>(new
+            {
+                AdvisorId = advisor.Id,
+                UserId = advisor.UserId
+            });
+
+            return Ok(new
+            {
+                Message = "Akademisyen başarıyla silindi ve pasife alındı."
             });
         }
     }

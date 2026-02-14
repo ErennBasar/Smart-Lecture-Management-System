@@ -1,4 +1,5 @@
 using Advisor.API.Models;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Shared.Extensions;
 
@@ -14,6 +15,16 @@ builder.Services.AddSharedServices();
 builder.Services.AddDbContext<AdvisorDbContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
+
+builder.Services.AddMassTransit(s =>
+{
+    s.UsingRabbitMq((context, configuration) =>
+    {
+        var rabbitMqUri = builder.Configuration.GetConnectionString("RabbitMq");
+        
+        configuration.Host(new Uri(rabbitMqUri));
+    });
 });
 
 var app = builder.Build();

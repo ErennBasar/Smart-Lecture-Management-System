@@ -233,5 +233,15 @@ namespace Student.API.Controllers
             return Ok(students);
 
         }
+
+        [HttpGet("check-active-students/{advisorId}")]
+        [Authorize(Roles = "Admin, Academician")]
+        public async Task<IActionResult> CheckActiveStudents(Guid advisorId)
+        {
+            var hasActiveStudent = await _dbContext.Students
+                .AnyAsync(s => s.AdvisorId == advisorId && !s.IsDeleted && s.IsActive);
+
+            return Ok(hasActiveStudent);
+        }
     }
 }
